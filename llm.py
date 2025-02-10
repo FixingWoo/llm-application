@@ -17,7 +17,7 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 
 store = {}
 
-def set_vector_store():
+def set_vector_store(embedding, index_name):
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=1500,
         chunk_overlap=200,
@@ -26,7 +26,7 @@ def set_vector_store():
     loader = Docx2txtLoader('./target.docx')
     document_list = loader.load_and_split(text_splitter=text_splitter)
 
-    PineconeVectorStore.aadd_documents
+    PineconeVectorStore.from_documents(document_list, embedding, index_name=index_name)
 
 def get_session_history(session_id: str) -> BaseChatMessageHistory:
     if session_id not in store:
@@ -48,9 +48,9 @@ def get_retriever():
     stats = index.describe_index_stats()
     vector_count = stats.get("total_vector_count", 0)
 
-    # if vector_count == 0:
-    
-
+    if vector_count == 0:
+        set_vector_store(embedding, index_name)
+            
     database = PineconeVectorStore.from_existing_index(index_name=index_name, embedding=embedding)
     retriever = database.as_retriever(search_kwargs={'k': 4})
     return retriever
