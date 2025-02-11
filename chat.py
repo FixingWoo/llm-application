@@ -16,8 +16,7 @@ if 'message_list' not in st.session_state:
 
 for message in st.session_state.message_list:
     with st.chat_message(message["role"]):
-        st.write(message["content"])
-
+        st.markdown(message["content"], unsafe_allow_html=True)
 
 if user_question := st.chat_input(placeholder="복무규정에 관련된 궁금한 내용들을 말씀해주세요!"):
     with st.chat_message("user"):
