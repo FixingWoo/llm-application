@@ -4,10 +4,10 @@ import time
 from dotenv import load_dotenv
 from llm import get_ai_response
 
-st.set_page_config(page_title="복무규정 챗봇", page_icon="🤖")
+st.set_page_config(page_title="BLUEDIGM 업무포털 챗봇", page_icon="🤖")
 
-st.title("🤖 복무규정 챗봇")
-st.caption("복무규정에 관련된 모든 것을 답해드립니다!")
+st.title("🤖 BLUEDIGM 업무포털 챗봇")
+st.caption("BLUEDIGM 업무포털과 관련된 모든 질문을 해결해드립니다!")
 
 load_dotenv()
 
@@ -18,7 +18,7 @@ for message in st.session_state.message_list:
     with st.chat_message(message["role"]):
         st.markdown(message["content"], unsafe_allow_html=True)
 
-if user_question := st.chat_input(placeholder="복무규정에 관련된 궁금한 내용들을 말씀해주세요!"):
+if user_question := st.chat_input(placeholder="업무포털에 대해 궁금한 점을 말씀해주세요!"):
     with st.chat_message("user"):
         start_time = time.time()
         st.write(user_question)
@@ -26,7 +26,6 @@ if user_question := st.chat_input(placeholder="복무규정에 관련된 궁금�
 
     with st.spinner("답변을 생성하는 중 입니다."):
         ai_response_stream = get_ai_response(user_question)
-
         ai_message = ""
 
         with st.chat_message("ai"):

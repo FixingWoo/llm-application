@@ -1,9 +1,6 @@
-from langchain_community.document_loaders import Docx2txtLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_upstage import UpstageEmbeddings
 from langchain_pinecone import PineconeVectorStore
 from langchain_upstage import ChatUpstage
-from pinecone import Pinecone
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, FewShotChatMessagePromptTemplate
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
@@ -18,17 +15,6 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 
 store = {}
 
-def set_vector_store(embedding, index_name):
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1500,
-        chunk_overlap=200,
-    )
-
-    loader = Docx2txtLoader('./target.docx')
-    document_list = loader.load_and_split(text_splitter=text_splitter)
-
-    PineconeVectorStore.from_documents(document_list, embedding, index_name=index_name)
-
 def get_session_history(session_id: str) -> BaseChatMessageHistory:
     if session_id not in store:
         store[session_id] = ChatMessageHistory()
@@ -41,16 +27,6 @@ def get_llm():
 def get_retriever():
     embedding = UpstageEmbeddings(model="solar-embedding-1-large")
     index_name = 'bd'
-
-    # 인덱스 상태 확인
-    pc = Pinecone()
-    index = pc.Index(index_name)
-
-    stats = index.describe_index_stats()
-    vector_count = stats.get("total_vector_count", 0)
-
-    if vector_count == 0:
-        set_vector_store(embedding, index_name)
             
     database = PineconeVectorStore.from_existing_index(index_name=index_name, embedding=embedding)
     retriever = database.as_retriever(search_kwargs={'k': 4})
@@ -114,12 +90,12 @@ def get_rag_chain():
     # )
 
     system_prompt = (
-        "당신은 복무규정 전문가입니다. 직원의 복무규정에 관한 질문에 답변해주세요"
+        "당신은 BLUEDIGM 업무포털 전문가입니다. BLUEDIGM 업무포털 이하 모든 질문에 답변해주세요"
         "아래에 제공된 문서를 활용해서 답변해주시고"
         "답변을 알 수 없다면 모른다고 답변해주세요"
         "만약 테스트 질문일땐 테스트 질문을 받았다고 답변해주세요"
-        "답변을 제공할 때는 복무규정 (제 X 장, 제 X 조)에 따르면 이라고 시작하면서 답변해주시고"
-        "2-3 문장정도의 짧은 내용의 답변을 원합니다"
+        "답변을 제공할 때는 출처를 알리며 답변을 시작해주시고"
+        # "2-3 문장정도의 짧은 내용의 답변을 원합니다"
         "\n\n"
         "{context}"
     )
